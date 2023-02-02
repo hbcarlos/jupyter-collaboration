@@ -46,6 +46,10 @@ test = [
     "pytest-timeout",
 ]
 
+
+#[tool.hatch.build]
+#ignore-vcs = true
+
 [tool.hatch.version]
 source = "nodejs"
 path = "package.json"
@@ -54,13 +58,13 @@ path = "package.json"
 path = "package.json"
 fields = ["description", "authors", "urls"]
 
+[tool.hatch.build]
+artifacts = ["package.json", "scripts", "packages", "jupyterlab_rtc/labextension"]
+exclude = [".github", "binder"]
+
 [tool.hatch.build.hooks.version]
 source = "code"
 path = "jupyterlab_rtc/_version.py"
-
-[tool.hatch.build.target.sdist]
-artifacts = ["package.json", "scripts", "jupyterlab_rtc/labextension"]
-exclude = [".github", "binder"]
 
 [tool.hatch.build.targets.wheel.shared-data]
 "install.json" = "share/jupyter/labextensions/@jupyterlab/rtc-extension/install.json"
@@ -80,7 +84,11 @@ skip-if-exists = ["jupyterlab_rtc/labextension/static/style.js"]
 [tool.hatch.build.hooks.jupyter-builder.build-kwargs]
 npm = ["jlpm"]
 build_cmd = "build:prod"
-editable_build_cmd = "install:extension"
+
+[tool.hatch.build.hooks.jupyter-builder.editable-build-kwargs]
+npm = ["jlpm"]
+build_cmd = "install:extension"
+source_dir = "packages"
 
 [tool.jupyter-releaser.options]
 version-cmd = "python scripts/bump_version.py --force"
@@ -96,9 +104,12 @@ before-build-python = [
     "jlpm"
 ]
 before-bump-version = [
-    "pip install 'jupyterlab>=4.0.0a32'",
+    "python -m pip install 'jupyterlab>=4.0.0a32'",
     "jlpm"
 ]
+
+[tool.jupyter-releaser]
+skip = ["check-links"]
 
 [tool.check-wheel-contents]
 ignore = ["W002"]
@@ -146,6 +157,3 @@ module = [
     "terminado"
 ]
 ignore_missing_imports = true
-
-[tool.jupyter-releaser]
-skip = ["check-links"]
